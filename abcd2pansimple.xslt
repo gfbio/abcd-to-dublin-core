@@ -7,9 +7,24 @@
 				<oai:header>
 					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="translate(normalize-space(abcd:UnitID),' ','')"/>
 					</oai:identifier>
-					<!---<oai:datestamp>
-						<xsl:value-of select="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified"/>
-					</oai:datestamp>-->
+					<xsl:if test="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified">
+						<oai:datestamp>							
+						<xsl:value-of select="substring(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified,0,11)"/>
+						</oai:datestamp>
+					</xsl:if>						
+						<!---
+						<xsl:choose>
+							<xsl:when test="matches(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}-\d{2}-\d{2}')">
+								<xsl:value-of select="substring(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,11)"/>
+							</xsl:when>
+							<xsl:when test="matches(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}')">
+								<xsl:value-of select="substring(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,5)"/>
+							</xsl:when>
+						</xsl:choose>
+					</oai:datestamp>
+					<oai:datestamp>
+						<xsl:value-of select="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified"/>-->
+					
 				</oai:header>
 				<oai:metadata>
 					<dataset xmlns="urn:pangaea.de:dataportals" xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -114,16 +129,8 @@
 								<location>
 									<xsl:value-of select="abcd:NamedArea/abcd:AreaName"/>
 								</location>
-							</xsl:for-each>
+							</xsl:for-each>							
 							<xsl:choose>
-								<xsl:when test="abcd:Gathering/abcd:DateTime/abcd:DateText!=''">
-									<startDate>
-										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:DateText[1]"/>
-									</startDate>
-									<endDate>
-										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:DateText"/>
-									</endDate>
-								</xsl:when>
 								<xsl:when test="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeBegin!=''">
 									<startDate>
 										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeBegin"/>
@@ -132,6 +139,14 @@
 								<xsl:when test="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeEnd!=''">
 									<endDate>
 										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeEnd"/>
+									</endDate>
+								</xsl:when>
+								<xsl:when test="abcd:Gathering/abcd:DateTime/abcd:DateText!=''">
+									<startDate>
+										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:DateText[1]"/>
+									</startDate>
+									<endDate>
+										<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:DateText"/>
 									</endDate>
 								</xsl:when>
 							</xsl:choose>
