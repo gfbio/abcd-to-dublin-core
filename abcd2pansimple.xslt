@@ -94,9 +94,11 @@
 							</xsl:choose>
 						</dc:type>
 						<dc:format>text/html</dc:format>
+						<xsl:if test="abcd:RecordURI">
 						<linkage type="metadata">
 							<xsl:value-of select="abcd:RecordURI"/>
 						</linkage>
+						</xsl:if>
 						<dc:identifier>
 							<xsl:value-of select="abcd:UnitID"/>
 						</dc:identifier>
