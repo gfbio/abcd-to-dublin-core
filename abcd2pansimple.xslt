@@ -1,33 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:abcd="http://www.tdwg.org/schemas/abcd/2.06" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:abcd="http://www.tdwg.org/schemas/abcd/2.06" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:pangaea.de:dataportals">
 	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 	<xsl:template match="/">
+		<oai:OAI-PMH xmlns:oai="http://www.openarchives.org/OAI/2.0/"
+			  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd
+				  				urn:pangaea.de:dataportals http://ws.pangaea.de/schemas/pansimple/pansimple.xsd
+				  				http://purl.org/dc/elements/1.1/ http://dublincore.org/schemas/xmls/qdc/dc.xsd">
+		
+	<oai:responseDate>2002-02-08T08:55:46Z</oai:responseDate>
+	<oai:request verb="GetRecord" identifier="oai:arXiv.org:cs/0112017" metadataPrefix="oai_dc">http://arXiv.org/oai2</oai:request>
+	<oai:ListRecords>
 		<xsl:for-each select="abcd:DataSets/abcd:DataSet/abcd:Units/abcd:Unit">
 			<oai:record>
 				<oai:header>
 					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="translate(normalize-space(abcd:UnitID),' ','')"/>
 					</oai:identifier>
-					<xsl:if test="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified">
-						<oai:datestamp>							
-						<xsl:value-of select="substring(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified,0,11)"/>
-						</oai:datestamp>
-					</xsl:if>						
-						<!---
+					<oai:datestamp>
 						<xsl:choose>
-							<xsl:when test="matches(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}-\d{2}-\d{2}')">
-								<xsl:value-of select="substring(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,11)"/>
+							<xsl:when test="matches(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}-\d{2}-\d{2}')">
+								<xsl:value-of select="substring(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,11)"/>
 							</xsl:when>
-							<xsl:when test="matches(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}')">
-								<xsl:value-of select="substring(abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,5)"/>
+							<xsl:when test="matches(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified,'\d{4}')">
+								<xsl:value-of select="substring(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified/text(),0,5)"/>
 							</xsl:when>
 						</xsl:choose>
-					</oai:datestamp>
-					<oai:datestamp>
-						<xsl:value-of select="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified"/>-->
-					
+					</oai:datestamp><!-- -->
 				</oai:header>
 				<oai:metadata>
-					<dataset xmlns="urn:pangaea.de:dataportals" xmlns:dc="http://purl.org/dc/elements/1.1/">
+					<dataset>
 						<dc:title>
 							<xsl:choose>
 								<xsl:when test="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString">
@@ -66,8 +67,7 @@
 						<dc:date>
 							<xsl:value-of select="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeBegin"/>
 						</dc:date>-->
-						<dc:publisher>
-							<xsl:choose>
+						<dc:publisher>GFBio <xsl:choose>
 								<xsl:when test="../../abcd:Metadata/abcd:Owners/abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text">
 									<xsl:value-of select="../../abcd:Metadata/abcd:Owners/abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text"/>
 								</xsl:when>
@@ -76,8 +76,7 @@
 								</xsl:otherwise>
 							</xsl:choose>
 						</dc:publisher>
-						<dataCenter>
-							<xsl:choose>
+						<dataCenter>GFBio <xsl:choose>
 								<xsl:when test="../../abcd:Metadata/abcd:Owners/abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text">
 									<xsl:value-of select="../../abcd:Metadata/abcd:Owners/abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text"/>
 								</xsl:when>
@@ -94,15 +93,26 @@
 							</xsl:choose>
 						</dc:type>
 						<dc:format>text/html</dc:format>
-						<xsl:if test="abcd:RecordURI">
 						<linkage type="metadata">
 							<xsl:value-of select="abcd:RecordURI"/>
+							<xsl:choose>
+								<xsl:when test="abcd:RecordURI">
+									<xsl:value-of select="abcd:RecordURI"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI"/>
+								</xsl:otherwise>
+							</xsl:choose>
 						</linkage>
-						</xsl:if>
 						<dc:identifier>
 							<xsl:value-of select="abcd:UnitID"/>
 						</dc:identifier>
-						<dc:coverage xsi:type="CoverageType">
+						<!-- 
+						<dc:identifier>
+							<xsl:value-of select="abcd:SourceInstitutionID"/>:<xsl:value-of select="abcd:SourceID"/>:<xsl:value-of select="abcd:UnitID"/>
+						</dc:identifier>
+						 -->
+						<dc:coverage>
 							<xsl:if test="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LatitudeDecimal!=''">
 								<northBoundLatitude>
 									<xsl:value-of select="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LatitudeDecimal"/>
@@ -115,23 +125,32 @@
 								</southBoundLatitude>
 								<eastBoundLongitude>
 									<xsl:value-of select="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LongitudeDecimal"/>
-								</eastBoundLongitude>
+								</eastBoundLongitude>								
 							</xsl:if>
-							<xsl:if test="abcd:Gathering/abcd:Country/abcd:Name!=''">
-								<location>
-									<xsl:value-of select="abcd:Gathering/abcd:Country/abcd:Name"/>
-								</location>
-							</xsl:if>
+							<xsl:choose>
+								<xsl:when test="abcd:Gathering/abcd:Country/abcd:Name">
+									<location>
+										<xsl:value-of select="abcd:Gathering/abcd:Country/abcd:Name"/>
+									</location>
+								</xsl:when>
+								<xsl:when test="abcd:Gathering/abcd:Country/abcd:ISO3166Code!=''">
+									<location>
+										<xsl:value-of select="abcd:Gathering/abcd:Country/abcd:ISO3166Code"/>
+									</location>
+								</xsl:when>
+							</xsl:choose>
 							<xsl:if test="abcd:Gathering/abcd:LocalityText!=''">
 								<location>
 									<xsl:value-of select="abcd:Gathering/abcd:LocalityText"/>
 								</location>
 							</xsl:if>
-							<xsl:for-each select="abcd:Gathering/abcd:NamedAreas">
-								<location>
-									<xsl:value-of select="abcd:NamedArea/abcd:AreaName"/>
-								</location>
-							</xsl:for-each>							
+							<xsl:for-each select="abcd:Gathering/abcd:NamedAreas/abcd:NamedArea">
+								<xsl:if test="../../abcd:LocalityText!=abcd:AreaName and ../../abcd:Country/abcd:Name!=abcd:AreaName">
+									<location>
+										<xsl:value-of select="abcd:AreaName"/>
+									</location>
+								</xsl:if>
+							</xsl:for-each>
 							<xsl:choose>
 								<xsl:when test="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeBegin!=''">
 									<startDate>
@@ -153,20 +172,39 @@
 								</xsl:when>
 							</xsl:choose>
 						</dc:coverage>
-						<dc:subject xsi:type="SubjectType" type="taxonomy">
-							<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString"/>
-						</dc:subject>
-						<xsl:for-each select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa">
-							<dc:subject xsi:type="SubjectType" type="taxonomy">
-								<xsl:value-of select="abcd:HigherTaxon/abcd:HigherTaxonName"/>
+						<xsl:for-each select="abcd:Identifications/abcd:Identification">
+							<dc:subject type="taxonomy">
+								<xsl:value-of select="abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString"/>
 							</dc:subject>
+							<xsl:for-each select="abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon">
+								<dc:subject type="taxonomy">
+									<xsl:value-of select="abcd:HigherTaxonName"/>
+								</dc:subject>
+							</xsl:for-each>
 						</xsl:for-each>
-						<dc:rights>
-							<xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text"/>
-						</dc:rights>
+						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text">
+							<dc:rights>
+								<xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text"/>
+								<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Details">, <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Details"/>
+								</xsl:if>
+								<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:URI"> <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:URI"/>
+								</xsl:if>
+							</dc:rights>
+						</xsl:if>
+						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text">
+							<dc:rights>
+								<xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
+								<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Details">, <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Details"/>
+								</xsl:if>
+								<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:URI"> <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:URI"/>
+								</xsl:if>
+							</dc:rights>
+						</xsl:if>
 					</dataset>
 				</oai:metadata>
 			</oai:record>
-		</xsl:for-each>
+			</xsl:for-each>
+		</oai:ListRecords>
+		</oai:OAI-PMH>
 	</xsl:template>
 </xsl:stylesheet>
