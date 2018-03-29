@@ -244,7 +244,7 @@
 						</xsl:if>
 						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text">
 							<dc:rights>
-							Licence: <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
+							License: <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
 							</dc:rights>
 						</xsl:if>
 						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Copyrights/abcd:Copyright/abcd:Text">
@@ -260,7 +260,7 @@
 							</xsl:if>
 							<xsl:if test="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text">
 								<dc:rights>
-							Licence for associated multimedia objects: <xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text"/>
+							License for associated multimedia objects: <xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text"/>
 								</dc:rights>
 							</xsl:if>
 						</xsl:for-each>
