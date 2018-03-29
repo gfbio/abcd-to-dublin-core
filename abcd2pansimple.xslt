@@ -3,16 +3,23 @@
 	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 	<xsl:template match="/">
 		<xsl:for-each select="abcd:DataSets/abcd:DataSet/abcd:Units/abcd:Unit">
-			<oai:record>
-				<oai:header>
+					<oai:record>
+				<oai:header status="deleted">
 					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="../../BMS_dsa"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
 					</oai:identifier>
-					<xsl:if test="../../abcd:Metadata/abcd:RevisionData/abcd:DateModified">
+					<oai:datestamp>
+						<xsl:value-of select="../../ABCDHarvesttime"/>
+					</oai:datestamp>
+				</oai:header>
+			</oai:record>
+			<oai:record>
+				<oai:header>
+					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="../../BMS_ArchiveFolder"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
+					</oai:identifier>
 						<oai:datestamp>
-							<xsl:value-of select="../../ABCDFiletime"/>
+							<xsl:value-of select="../../ABCDHarvesttime"/>
 							<!--<xsl:value-of select="substring(../../abcd:Metadata/abcd:RevisionData/abcd:DateModified,0,11)"/>-->
 						</oai:datestamp>
-					</xsl:if>
 				</oai:header>
 				<oai:metadata>
 					<dataset xmlns="urn:pangaea.de:dataportals" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:pangaea.de:dataportals http://ws.pangaea.de/schemas/pansimple/pansimple.xsd">
@@ -130,6 +137,12 @@
 							</xsl:choose>
 						</dc:type>
 						<dc:format>text/html</dc:format>
+						<xsl:if test="abcd:MultiMediaObjects/abcd:MultiMediaObject/abcd:FileURI">
+							<linkage type="multimedia"><xsl:value-of select="abcd:MultiMediaObjects/abcd:MultiMediaObject/abcd:FileURI"/></linkage>
+						</xsl:if>
+						<xsl:if test="abcd:MultiMediaObjects/abcd:MultiMediaObject/abcd:fileURI">
+							<linkage type="multimedia"><xsl:value-of select="abcd:MultiMediaObjects/abcd:MultiMediaObject/abcd:fileURI"/></linkage>
+						</xsl:if>
 						<xsl:choose>
 							<xsl:when test="abcd:RecordURI">
 								<linkage type="metadata">
@@ -152,6 +165,11 @@
 						<dc:identifier>
 							<xsl:value-of select="../../BMS_dsa"/>:<xsl:value-of select="abcd:UnitID"/>
 						</dc:identifier>
+						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations/abcd:Citation/abcd:Text">
+						<dc:source>
+							<xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations/abcd:Citation/abcd:Text"/>
+						</dc:source>
+						</xsl:if>
 						<dc:coverage xsi:type="CoverageType">
 							<xsl:if test="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LatitudeDecimal!=''">
 								<northBoundLatitude>
@@ -212,6 +230,24 @@
 								</xsl:when>
 							</xsl:choose>
 						</dc:coverage>
+						<xsl:if test="abcd:MultiMediaObjects/abcd:MultiMediaObject/abcd:FileURI!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Multimedia Object</dc:subject>
+						</xsl:if>
+						<xsl:if test="abcd:Gathering/abcd:Altitude!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Altitude</dc:subject>
+						</xsl:if>
+						<xsl:if test="abcd:Gathering/abcd:LocalityText!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Locality</dc:subject>
+						</xsl:if>
+						<xsl:if test="abcd:Gathering/abcd:DateTime/abcd:ISODateTimeBegin!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Date</dc:subject>
+						</xsl:if>
+						<xsl:if test="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LatitudeDecimal!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Latitude</dc:subject>
+						</xsl:if>
+						<xsl:if test="abcd:Gathering/abcd:SiteCoordinateSets/abcd:SiteCoordinates/abcd:CoordinatesLatLong/abcd:LongitudeDecimal!=''">
+						<dc:subject xsi:type="SubjectType" type="parameter">Longitude</dc:subject>
+						</xsl:if>
 						<xsl:if test="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString">
 							<dc:subject xsi:type="SubjectType" type="taxonomy">
 								<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString"/>
@@ -237,27 +273,20 @@
 							</xsl:for-each>
 						</xsl:if>
 						<!--+lithostrat-->
+					
 						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text">
+						<xsl:if test="not(../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text = ../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text)">
 							<dc:rights>
 								<xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text"/>
 							</dc:rights>
+							</xsl:if>
 						</xsl:if>
 						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text">
 							<dc:rights>
 							License: <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
 							</dc:rights>
 						</xsl:if>
-						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Copyrights/abcd:Copyright/abcd:Text">
-							<dc:rights>
-							Copyright: <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Copyrights/abcd:Copyright/abcd:Text"/>
-							</dc:rights>
-						</xsl:if>
 						<xsl:for-each select="abcd:MultiMediaObjects">
-							<xsl:if test="abcd:MultiMediaObject/abcd:IPR/abcd:Copyrights/abcd:Copyright/abcd:Text">
-								<dc:rights>
-							Copyright for associated multimedia objects: <xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Copyrights/abcd:Copyright/abcd:Text"/>
-								</dc:rights>
-							</xsl:if>
 							<xsl:if test="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text">
 								<dc:rights>
 							License for associated multimedia objects: <xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text"/>
@@ -265,8 +294,9 @@
 							</xsl:if>
 						</xsl:for-each>
 						<!--	Licence (multimedia objects): /DataSets/DataSet/Units/Unit/MultiMediaObjects/MultiMediaObject/IPR/Licenses/License/Text-->
-						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations"/>
-						<xsl:for-each select="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations">
+							<!--	<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations"/>
+							
+<xsl:for-each select="../../abcd:Metadata/abcd:IPRStatements/abcd:Citations">
 							<dc:source>
 								<xsl:value-of select="abcd:Citation/abcd:Text"/>
 								<xsl:if test="abcd:Citation/abcd:Details">
@@ -277,11 +307,13 @@
 								</xsl:if>
 							</dc:source>
 						</xsl:for-each>
+			
 						<xsl:if test="abcd:UnitReferences/abcd:UnitReference/abcd:TitleCitation">
 							<dc:source>
 								<xsl:value-of select="abcd:UnitReferences/abcd:UnitReference/abcd:TitleCitation"/>
 							</dc:source>
 						</xsl:if>
+-->
 						<xsl:if test="../../abcd:Metadata/abcd:Representation/abcd:URI">
 							<dc:relation>
 								<xsl:value-of select="../../abcd:Metadata/abcd:Representation/abcd:URI"/>
@@ -294,14 +326,16 @@
 							</dc:relation>
 						</xsl:if>
 						<parentIdentifier>
-						<xsl:choose>
+						<xsl:text>urn:gfbio.org:abcd:set:</xsl:text><xsl:value-of select="../../BMS_ArchiveFolder"/>
+						<!--<xsl:choose>
 						<xsl:when test="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI">							
 								<xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI"/>							
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:value-of select="../../BMS_ArchiveUrl"/>
+							<xsl:value-of select="../../BMS_ArchiveFolder"/>
 						</xsl:otherwise>
 						</xsl:choose>
+-->
 						</parentIdentifier>
 						<additionalContent>
 							<xsl:for-each select="descendant::*">

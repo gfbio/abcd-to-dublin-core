@@ -1,88 +1,80 @@
 <?php
-//PHP script to create a static OAI repository
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
 set_time_limit(0);
+date_default_timezone_set('UTC');
 header('Content-type: application/xml');
-function convertdate($datestr){
-    $timestamp=strtotime($datestr);
-    if($timestamp!==false)
-        return date('Y-m-d',$timestamp);
-    else return false;
+include_once('cls_oai.php');
+/*$loghandle=fopen('log.txt','a');
+fwrite($loghandle,date('c').' '.$_SERVER[REQUEST_URI]."\r\n");
+fclose($loghandle);*/
+$possibleverbs=array('Identify','ListRecords','ListMetadataFormats','ListSets','ListIdentifiers');
+$possiblearguments=array('verb','metadataPrefix','identifier','from','until','set','resumptionToken','setSpec');
+$setspec=false;
+if(isset($_REQUEST['set'])){
+    $repositoryname=rawurlencode($_REQUEST['set']);   
+    $setspec=true;
+}
+if(isset($_REQUEST['from']))
+    $from=$_REQUEST['from'];
+if(isset($_REQUEST['until']))
+    $until=$_REQUEST['until'];
+    
+if(isset($_REQUEST['resumptionToken']))
+    $resumptiontoken=$_REQUEST['resumptionToken'];
+    
+$oai=new oai($from,$until);
+$oai->setspec=$setspec;
+
+#print_r($oai->repositories);
+foreach ($_REQUEST as $argname => $argval){
+    if(!in_array($argname,$possiblearguments)){
+        $oai->getError('badArgument','Illegal argument passed');
+        exit;
+    }
 }
 
-function fopendir($dir, &$fileinfo = array()) {
-    if ($handle = opendir($dir)) {
-        while (false !== ($file = readdir($handle))) {
-            if (!is_dir($dir.'/'.$file)) {
-                $fileinfo[] = array($dir.'/'.$file, filesize($dir.'/'.$file));
-            } elseif (is_dir($dir.'/'.$file) && $file != '.' && $file != '..') {
-                fopendir($dir.'/'.$file, $fileinfo);
+if(isset($_REQUEST['verb'])){  
+    $verb=$_REQUEST['verb'];
+    #$updates=GetModifiedDates($gatewayfolder.'/'.$repositoryname);
+    if(in_array($verb, $possibleverbs)){
+        if(isset($repositoryname)){
+            $validset=false;            
+            foreach($oai->repositories as $set){
+                if($repositoryname==$set) $validset=true;
             }
+            if($validset===false){               
+                $oai->getError('badArgument','Unknown Set: '.$repositoryname);
+            }
+            else {                
+                $oai->repositoryname=$repositoryname;
+                unset($oai->repositories);
+                $oai->repositories[0]=$repositoryname;
+            }
+            
+        }else {
+            $oai->repositoryname=$oai->repositories[0];
         }
-        closedir($handle);
-    }
-    return $fileinfo;
-}    
-// directory where abcd files are located
-
-$xsltfile='abcd2pansimple.xslt';
-if(isset($_REQUEST['directory']))
-    $xmldirectory=$_REQUEST['directory'];
-else
-    $xmldirectory='ABCD';    
-$earliestdate='';
-$n=0;
-
-$fileinfo=fopendir($xmldirectory);
-
-if(is_array($fileinfo)){
-    echo '<?xml version="1.0" encoding="UTF-8"?>
-<Repository xmlns="http://www.openarchives.org/OAI/2.0/static-repository" 
-            xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-            xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/static-repository 
-                                http://www.openarchives.org/OAI/2.0/static-repository.xsd">
-  <Identify>
-    <oai:repositoryName>'.$xmldirectory.'</oai:repositoryName>
-    <oai:baseURL>http://</oai:baseURL>
-    <oai:protocolVersion>2.0</oai:protocolVersion>
-    <oai:adminEmail>rhuber@uni-bremen.de</oai:adminEmail>
-    <oai:earliestDatestamp>'.$earliestdate.'</oai:earliestDatestamp>
-    <oai:deletedRecord>no</oai:deletedRecord>
-    <oai:granularity>YYYY-MM-DD</oai:granularity>
-  </Identify>
-  <ListMetadataFormats>
-    <oai:metadataFormat>
-      <oai:metadataPrefix>pan_dc</oai:metadataPrefix>
-      <oai:schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</oai:schema>
-      <oai:metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</oai:metadataNamespace>
-    </oai:metadataFormat>    
-  </ListMetadataFormats>
-  <ListRecords metadataPrefix="pan_dc">';
-  
-    foreach($fileinfo as $file){
-        $xmlfile=$file[0];
-        if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){    
-            $XML = new DOMDocument(); 
-            $XML->load($xmlfile);
-            if($n==0){
-                $xpath = new DOMXpath($XML);
-                $elements = $xpath->query("//abcd:DateModified");
-                if (!is_null($elements)) {
-                    foreach ($elements as $element)
-                        $earliestdate=convertdate($element->nodeValue); 
+        
+        $oai->getProviderInfo();
+        #echo $oai->repositoryname;
+        if(!$oai->error){
+            if($verb=='Identify') {echo $oai->Identify();}
+            elseif($verb=='ListSets') {echo $oai->ListSets();}
+            elseif($verb=='ListRecords') {
+                if(!isset($_REQUEST['metadataPrefix'])&&!isset($resumptiontoken))
+                    $oai->getError('badArgument','metadataPrefix argument missing');                    
+                elseif(!in_array($_REQUEST['metadataPrefix'],$oai->allowedprefixes)&&!isset($resumptiontoken))
+                    $oai->getError('cannotDisseminateFormat');
+                else {
+                    $oai->ListRecords($resumptiontoken,$from,$until);
                 }
-            }    
-            $xslt = new XSLTProcessor();
-            $xslt->registerPhpFunctions();
-            $XSL = new DOMDocument(); 
-            $XSL->load( $xsltfile, LIBXML_NOCDATA); 
-            $xslt->importStylesheet( $XSL ); 
-            print str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt->transformToXML( $XML ));
-            $n++;
-        } 
-    }
-
-echo'</ListRecords>
-</Repository>';
-}
-?>
+            }
+            elseif($verb=='ListIdentifiers') {
+                $oai->ListIdentifiers($resumptiontoken,$from,$until);
+            }
+            elseif($verb=='ListMetadataFormats') {echo $oai->ListMetadataFormats();}
+            else {$oai->getError('badVerb','Function not implemented');}
+        }
+    }else $oai->getError('badVerb');
+}else $oai->getError('badVerb','verb argument required');
