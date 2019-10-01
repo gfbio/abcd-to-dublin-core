@@ -314,9 +314,9 @@
 							</dc:source>
 						</xsl:if>
 -->
-						<xsl:if test="../../abcd:Metadata/abcd:Representation/abcd:URI">
+						<xsl:if test="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI">
 							<dc:relation>
-								<xsl:value-of select="../../abcd:Metadata/abcd:Representation/abcd:URI"/>
+								<xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI"/>
 							</dc:relation>
 						</xsl:if>
 						<xsl:if test="abcd:Associations/abcd:UnitAssociation/abcd:AssociatedUnitID">
