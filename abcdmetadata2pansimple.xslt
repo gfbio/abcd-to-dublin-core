@@ -88,7 +88,7 @@
 					</xsl:if>
 					<xsl:if test="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text">
 						<dc:rights>
-							License: <xsl:value-of select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
+							<xsl:text>License: </xsl:text><xsl:value-of select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
 						</dc:rights>
 					</xsl:if>
 					<dc:relation>

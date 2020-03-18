@@ -5,7 +5,7 @@
 		<xsl:for-each select="abcd:DataSets/abcd:DataSet/abcd:Units/abcd:Unit">
 					<oai:record>
 				<oai:header status="deleted">
-					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="../../BMS_dsa"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
+					<oai:identifier><xsl:text>urn:gfbio.org:abcd:</xsl:text><xsl:value-of select="../../BMS_dsa"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
 					</oai:identifier>
 					<oai:datestamp>
 						<xsl:value-of select="../../ABCDHarvesttime"/>
@@ -14,7 +14,7 @@
 			</oai:record>
 			<oai:record>
 				<oai:header>
-					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="../../BMS_ArchiveFolder"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
+					<oai:identifier><xsl:text>urn:gfbio.org:abcd:</xsl:text><xsl:value-of select="../../BMS_ArchiveFolder"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>
 					</oai:identifier>
 						<oai:datestamp>
 							<xsl:value-of select="../../ABCDHarvesttime"/>
@@ -26,16 +26,16 @@
 						<dc:title>
 							<xsl:choose>
 								<xsl:when test="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString">
-									<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString"/>, a <xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/> record of the "<xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:Title"/>" dataset
+									<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:ScientificName/abcd:FullScientificNameString"/><xsl:text>, a </xsl:text><xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/><xsl:text> record of the "</xsl:text><xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:Title"/><xsl:text>" dataset</xsl:text>
 								</xsl:when>
 								<!--last-->
 								<xsl:when test="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon[last()]/abcd:HigherTaxonName">
-									<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon[last()]/abcd:HigherTaxonName"/> (<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon[1]/abcd:HigherTaxonRank"/>), unspecified, a <xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/> record of the "<xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:Title"/>" dataset
+									<xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon[last()]/abcd:HigherTaxonName"/><xsl:text> (</xsl:text><xsl:value-of select="abcd:Identifications/abcd:Identification/abcd:Result/abcd:TaxonIdentified/abcd:HigherTaxa/abcd:HigherTaxon[1]/abcd:HigherTaxonRank"/><xsl:text>), unspecified, a </xsl:text><xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/><xsl:text> record of the "</xsl:text><xsl:value-of select="../../abcd:Metadata/abcd:Description/abcd:Representation/abcd:Title"/><xsl:text>" dataset</xsl:text>
 								</xsl:when>
 								<xsl:otherwise>
-										Undetermined <xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/>
+										<xsl:text>Undetermined </xsl:text><xsl:value-of select="php:function('oai::CamelcaseToWords', string(abcd:RecordBasis))"/>
 								</xsl:otherwise>
-							</xsl:choose> [ID: <xsl:value-of select="abcd:UnitID"/>]
+							</xsl:choose><xsl:text> [ID: </xsl:text><xsl:value-of select="abcd:UnitID"/><xsl:text>]</xsl:text>
 							</dc:title>
 						<!--
 						<xsl:if test="abcd:Notes">
@@ -129,11 +129,11 @@
 						<dc:type>
 							<xsl:choose>
 								<xsl:when test="contains(abcd:RecordBasis,'Specimen') or contains(abcd:KindOfUnit,'Specimen') 
-								or abcd:RecordBasis='MaterialSample' or abcd:KindOfUnit='MaterialSample'">PhysicalObject</xsl:when>
+								or abcd:RecordBasis='MaterialSample' or abcd:KindOfUnit='MaterialSample'"><xsl:text>PhysicalObject</xsl:text></xsl:when>
 								<xsl:when test="contains(abcd:RecordBasis,'Observation') or contains(abcd:KindOfUnit,'Observation') 
-								or abcd:RecordBasis='Literature' or abcd:KindOfUnit='Literature'">Dataset</xsl:when>
+								or abcd:RecordBasis='Literature' or abcd:KindOfUnit='Literature'"><xsl:text>Dataset</xsl:text></xsl:when>
 								<xsl:when test="contains(abcd:RecordBasis,'Photograph') or contains(abcd:KindOfUnit,'Photograph') 
-								or abcd:RecordBasis='MultimediaObject' or abcd:KindOfUnit='MultimediaObject'">Image</xsl:when>
+								or abcd:RecordBasis='MultimediaObject' or abcd:KindOfUnit='MultimediaObject'"><xsl:text>Image</xsl:text></xsl:when>
 							</xsl:choose>
 						</dc:type>
 						<dc:format>text/html</dc:format>
@@ -158,7 +158,7 @@
 							-->
 							<xsl:otherwise>
 								<linkage type="metadata">
-									<xsl:value-of select="../../BMS_Pywrapper"/>/querytool/details.cgi?dsa=<xsl:value-of select="../../BMS_dsa"/>&amp;detail=unit&amp;schema=http%3A%2F%2Fwww.tdwg.org%2Fschemas%2Fabcd%2F2.06&amp;cat=<xsl:value-of select="php:function('urlencode',string(abcd:UnitID))"/>
+									<xsl:value-of select="../../BMS_Pywrapper"/><xsl:text>/querytool/details.cgi?dsa=</xsl:text><xsl:value-of select="../../BMS_dsa"/><xsl:text>&amp;detail=unit&amp;schema=http%3A%2F%2Fwww.tdwg.org%2Fschemas%2Fabcd%2F2.06&amp;cat=</xsl:text><xsl:value-of select="php:function('urlencode',string(abcd:UnitID))"/>
 								</linkage>
 							</xsl:otherwise>
 						</xsl:choose>
@@ -283,13 +283,13 @@
 						</xsl:if>
 						<xsl:if test="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text">
 							<dc:rights>
-							License: <xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
+							<xsl:text>License: </xsl:text><xsl:value-of select="../../abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"/>
 							</dc:rights>
 						</xsl:if>
 						<xsl:for-each select="abcd:MultiMediaObjects">
 							<xsl:if test="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text">
 								<dc:rights>
-							License for associated multimedia objects: <xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text"/>
+							<xsl:text>License for associated multimedia objects: </xsl:text><xsl:value-of select="abcd:MultiMediaObject/abcd:IPR/abcd:Licenses/abcd:License/abcd:Text"/>
 								</dc:rights>
 							</xsl:if>
 						</xsl:for-each>
@@ -339,8 +339,8 @@
 						</parentIdentifier>
 						<additionalContent>
 							<xsl:for-each select="descendant::*">
-								<xsl:if test="text()">
-									<xsl:value-of select="concat(text(),', ')"/>
+								<xsl:if test="string-length(normalize-space(text()))!=0">
+									<xsl:value-of select="normalize-space(text())"/><xsl:text>, </xsl:text>
 								</xsl:if>
 							</xsl:for-each>
 						</additionalContent>
