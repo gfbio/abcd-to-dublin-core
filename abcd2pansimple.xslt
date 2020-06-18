@@ -194,11 +194,13 @@
 									<xsl:value-of select="abcd:Gathering/abcd:Country/abcd:Name"/>
 								</location>
 							</xsl:if>
+							<!--
 							<xsl:if test="abcd:Gathering/abcd:LocalityText!=''">
 								<location>
 									<xsl:value-of select="abcd:Gathering/abcd:LocalityText"/>
 								</location>
 							</xsl:if>
+							-->
 							<xsl:if test="abcd:Gathering/abcd:NamedAreas">
 								<xsl:for-each select="abcd:Gathering/abcd:NamedAreas">
 									<location>
