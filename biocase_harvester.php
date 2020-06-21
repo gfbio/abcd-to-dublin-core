@@ -46,13 +46,17 @@ echo'<h1>Biocase ABCD Archive Harvester</h1>'."\r\n";
 echo'Starting... <br>'."\r\n";
 $oldarchives=array();
 $oldarchivejson=json_decode(file_get_contents($abcddir.'/archives.txt'));
+$last_harvest_time=null;
 foreach($oldarchivejson as $oldjson){
     foreach($oldjson->xml_archives as $oldarch){
         if ($oldarch->latest===true)
             $oldarchives[$oldarch->xml_archive]=$oldjson;
     }
-    
+    if($last_harvest_time<=strtotime($oldjson->harvest_time))
+        $last_harvest_time=strtotime($oldjson->harvest_time);
+   
 }
+ echo date('c',$last_harvest_time);
 $archivejson=json_decode(file_get_contents('http://bms.gfbio.org/services/xml-archives/'));
 $providerjson=json_decode(file_get_contents('http://bms.gfbio.org/services/providers/'));
 
@@ -66,8 +70,8 @@ foreach($archivejson as $aid=>$archive){
     if(1==1){
     foreach($providerjson as $provider){       
         if($provider->url==$archive->provider_url){
-            foreach($archive->xml_archives as $xmlar){
-                if($xmlar->latest==1){
+            foreach($archive->xml_archives as $xmlar){                
+                if($xmlar->latest==1||sizeof($archive->xml_archives)==1){
                     $xml_archive=$archivejson[$aid]->archive_url=$xmlar->xml_archive;
                     $xml_archive_id=$xmlar->id;
                     if(!array_key_exists($xmlar->xml_archive,$oldarchives)){
@@ -93,7 +97,7 @@ foreach($archivejson as $aid=>$archive){
     $extraxtzipdir=basename($archivezip,'.zip');
 
     $extractdir=preg_replace('![^A-Za-z]+!','_', $extraxtzipdir);
-    echo '<br>Opening ZIP Archive: '.$archivezip.'<br>'."\r\n";;
+    echo '<br>Opening ZIP Archive: '.$archivezip.' to be extracted to: '.$extractdir.'<br>'."\r\n";;
     $zipfile=getFile($archivezip,true,$ziphandle);
     $zip = new ZipArchive;
     $zipres = $zip->open($tempzip);
@@ -103,8 +107,8 @@ foreach($archivejson as $aid=>$archive){
     else
         $oldtimestamp=0;
             
-    if($zipres !==TRUE){
-        $zfilename = $mtime = $zip->statIndex(0)['name'];
+    if($zipres !==TRUE||$zipfile===false){
+        //$zfilename = $mtime = $zip->statIndex(0)['name'];
         echo "Error :- Unable to open the Zip File: ".$zipres."\r\n";
         $archivejson[$aid]->new_archive=0;
         $archivejson[$aid]->harvest_time=date('c',$oldtimestamp);
@@ -112,8 +116,8 @@ foreach($archivejson as $aid=>$archive){
         
     } else {
        
-        if(!file_exists($abcddir.'/'.$extraxtdir)){
-            mkdir($abcddir.'/'.$extraxtdir);
+        if(!file_exists($abcddir.'/'.$extractdir)){
+            mkdir($abcddir.'/'.$extractdir);
         } 
         echo 'Extracting ZIP Archive to '.$abcddir.'/'.$extractdir.'<br>'."\r\n";
         
@@ -130,8 +134,25 @@ foreach($archivejson as $aid=>$archive){
         }
         $archivejson[$aid]->archive_folder=$extractdir;
         $archivejson[$aid]->file_number=$zip->numFiles;
-        
-        $extractstatus=$zip->extractTo($abcddir.'/'.$extractdir);
+        //delete old files
+        echo 'deleting old files..'.'<br>'."\r\n";
+        $deletefiles = glob($abcddir.'/'.$extractdir.'/*'); // get all file names
+        foreach($deletefiles as $delfile){ // iterate files
+          if(is_file($delfile))
+            unlink($delfile); // delete file
+        }
+        //extract and rename
+        echo 'extract and rename..'.'<br>'."\r\n";
+        for($f=0;$fst=$zip->statIndex($f);$f++){
+            #print_r($zip->statIndex($f));
+            $filename = $zip->getNameIndex($f);
+            $fileinfo = pathinfo($filename);
+            echo $newname=str_pad($f+1, 5 ,'0', STR_PAD_LEFT);
+            //echo $zip->renameIndex($f,'newresponse.'.$newname.'.xml');
+            copy("zip://".$tempzip."#".$filename, $abcddir.'/'.$extractdir.'/response.'.$newname.'.xml');
+        }
+
+       // $extractstatus=$zip->extractTo($abcddir.'/'.$extractdir);
         touch($abcddir.'/'.$extractdir, $zip->statIndex(0)['mtime']);
         $zip->close();
         echo '<hr>';
@@ -146,5 +167,6 @@ foreach($archivejson as $aid=>$archive){
     #}else unset($archivejson[$aid]);
 }
 file_put_contents($abcddir.'/archives.txt',json_encode($archivejson));
+chmod($abcddir.'/archives.txt', 0777);
 echo 'Finished'."\r\n";
 ?>
