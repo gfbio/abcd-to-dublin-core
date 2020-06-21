@@ -14,7 +14,11 @@
 		<xsl:for-each select="abcd:DataSets/abcd:DataSet/abcd:Units/abcd:Unit">
 			<oai:record>
 				<oai:header status="deleted">
-					<oai:identifier>urn:gfbio.org:abcd:<xsl:value-of select="../../so:BMS_ArchiveFolder"/>:<xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>					
+					<oai:identifier>
+            <xsl:text>urn:gfbio.org:abcd:</xsl:text>
+            <xsl:value-of select="../../so:BMS_ArchiveFolder"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="translate(translate(normalize-space(abcd:UnitID),' ',''),'/','-')"/>					
 					</oai:identifier>
 					<oai:datestamp>2018-01-01T00:00:00Z</oai:datestamp>
 				</oai:header>
