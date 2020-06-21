@@ -7,7 +7,7 @@
 	<xsl:variable name="dataset_details" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Description/abcd:Representation/abcd:Details"></xsl:variable>
 	<xsl:variable name="dataset_owners" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Owners"></xsl:variable>
 	<xsl:variable name="ipr_statement" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:Citations/abcd:Citation/abcd:Text"></xsl:variable>
-	<xsl:variable name="dataset_uri" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Representation/abcd:URI"></xsl:variable>
+	<xsl:variable name="dataset_uri" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI"></xsl:variable>
 	<xsl:variable name="terms_of_use_text" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:TermsOfUseStatements/abcd:TermsOfUse/abcd:Text"></xsl:variable>
 	<xsl:variable name="licence_text" select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:IPRStatements/abcd:Licenses/abcd:License/abcd:Text"></xsl:variable>
 	<xsl:variable name="content_contacts" select="/abcd:DataSets/abcd:DataSet/abcd:ContentContacts"></xsl:variable>
