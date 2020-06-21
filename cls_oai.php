@@ -414,6 +414,8 @@ class oai{
                                     <so:BMS_Querytool>'.$this->providerinfo->querytool.'</so:BMS_Querytool>',$xmlheader);
                 
                 
+            echo $xmloutput;
+                
             $xmlstr=$xmlheader.$xmlbody;
                 $XML->loadXML($xmlstr);
                 
@@ -425,9 +427,7 @@ class oai{
                      
                     $XSL->load( $xsltfiledel, LIBXML_NOCDATA); 
                     $xslt->importStylesheet( $XSL );
-                    #echo libxml_get_last_error();
-                    $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt->transformToXML( $XML ));
-                    #echo libxml_get_last_error();
+                    echo str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt->transformToXML( $XML ));
                 }
                 else{
                     if($firstfile==1){
@@ -437,8 +437,7 @@ class oai{
                         $XSL2->load( $xsltfile2, LIBXML_NOCDATA); 
                         $xslt2->importStylesheet( $XSL2 );
                        
-                        $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt2->transformToXML( $XML ));
-                        #echo libxml_get_last_error();
+                        echo str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt2->transformToXML( $XML ));
                     }
                     
                     $xslt = new XSLTProcessor();
@@ -448,24 +447,18 @@ class oai{
                      
                     $XSL->load( $xsltfile, LIBXML_NOCDATA); 
                     $xslt->importStylesheet( $XSL );
-                    #echo libxml_get_last_error();
                     $xsltresult=$xslt->transformToXML( $XML );
-                    #print_r($xsltresult);
-                    #if($xsltresult===false) echo'Mist'; exit;
-                    $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xsltresult);
-                    #echo libxml_get_last_error();
+                    echo str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xsltresult);
                 }
-            } 
+              } 
 
-            if(isset($resumptiontoken))
-                $xmloutput.='<resumptionToken>'.$resumptiontoken.'</resumptionToken>';
-            else $xmloutput.= '<resumptionToken/>';
-            $xmloutput.='</ListRecords>
-            </OAI-PMH>';
+              if(isset($resumptiontoken)) {
+                  echo '<resumptionToken>'.$resumptiontoken.'</resumptionToken>';
+              }
+              
+              echo '</ListRecords></OAI-PMH>';
 
-            echo $xmloutput;
-
-            }
+              }
         }
     }
     
