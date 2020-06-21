@@ -134,8 +134,6 @@
 							<xsl:choose>
 								<xsl:when test="contains(abcd:RecordBasis,'Specimen') or contains(abcd:KindOfUnit,'Specimen') 
 								or abcd:RecordBasis='MaterialSample' or abcd:KindOfUnit='MaterialSample'">PhysicalObject</xsl:when>
-								<xsl:when test="contains(abcd:RecordBasis,'Observation') or contains(abcd:KindOfUnit,'Observation') 
-								or abcd:RecordBasis='Literature' or abcd:KindOfUnit='Literature'">Dataset</xsl:when>
 								<xsl:when test="contains(abcd:RecordBasis,'Photograph') or contains(abcd:KindOfUnit,'Photograph') 
 								or abcd:RecordBasis='MultimediaObject' or abcd:KindOfUnit='MultimediaObject'">Image</xsl:when>
 							</xsl:choose>
