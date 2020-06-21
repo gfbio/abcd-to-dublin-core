@@ -44,7 +44,8 @@ class oai{
         $earliesttimestamp=10000000000000000;
         unset($this->repositories);
         $providerinfo=json_decode(file_get_contents($this->gatewayfolder.'/archives.txt'));
-        
+       # $providerinfo=array_merge($providerinfo,json_decode(file_get_contents($this->gatewayfolder.'/deleted.txt')));
+        #print_r($providerinfo);exit;
         foreach($providerinfo as $pk=>$provider){
            # echo strtotime($from).' < '.strtotime($provider->harvest_time).'> '.strtotime($to).'<br>'."\r\n";
             $harvest=true;
@@ -66,9 +67,9 @@ class oai{
                     $this->repositories[$pk]=$provider->archive_folder;
                 
             }
-        }
+        } #print_r($this->repositories); exit;
         sort($this->repositories);
-       # print_r($this->repositories); exit;
+       
         
     }
     
@@ -213,8 +214,8 @@ class oai{
         }    
         $nexttoken=uniqid();
         $fileinfo=$this->GetArchivesFiles();
-       
-        sort($fileinfo); #print_r($fileinfo);
+       #print_r($fileinfo);exit;
+        sort($fileinfo); 
         if(!isset($resumptiontoken)){                                
             $ret['firstfile']=1;
             //with set spec
@@ -312,21 +313,25 @@ class oai{
      <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
      <request verb="ListIdentifiers">'.$baseurl.'</request>
      <ListIdentifiers>'; 
-            if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){
+            if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){libxml_use_internal_errors(true);
                 $XML = new DOMDocument();
-                $xmlstr=file_get_contents($xmlfile);
-                                               //brutal..
                 
+                $xmlstr=file_get_contents('./'.$xmlfile);
+                                               //brutal..
+                if($xmlstr===false) { echo $this->getError('Internal Error','Problems accessing file : '.$xmlfile);exit;    }                        
+                #print($xmlfile);
                 if(strpos($xmlstr,'xmlns:abcd21')!==false){
                     $xmlstr=str_replace('abcd21="http://www.tdwg.org/schemas/abcd/2.1','abcd="http://www.tdwg.org/schemas/abcd/2.06',$xmlstr);
                     $xmlstr=str_replace('abcd21','abcd',$xmlstr);
                 }
 
                 $XML->loadXML($xmlstr);
+                
                 $xslt = new XSLTProcessor();
                 $xslt->registerPhpFunctions();
                 $XSL = new DOMDocument(); 
                 $XSL->load( $xsltfile, LIBXML_NOCDATA);
+                
                 $xslt->importStylesheet( $XSL );                
                 $xsltres=$xslt->transformToXML( $XML );
                 if($xsltres!==false&&$xsltres!=null){
@@ -334,11 +339,12 @@ class oai{
                 }
                 else {
                     $libxmlerror='';
-                   /* foreach (libxml_get_errors() as $error) {
+                    foreach (libxml_get_errors() as $error) {
                         echo $libxmlerror.= "Libxml error: {$error->message}\n";
-                    }*/
-                    echo $this->getError('Internal Error','XSLT Processing: '.$libxmlerror);exit;
-                } 
+                    }
+                    echo $this->getError('Internal Error','XSLT Processing : '.$libxmlerror);exit;
+                }
+                libxml_use_internal_errors(false);
                 $n++;
             }else {
                 echo $this->getError('Internal Error','file does not exist: '.$xsltfile);exit;
@@ -405,30 +411,38 @@ class oai{
             if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){    
                 $XML = new DOMDocument();
                 
-                $xmlstr=file_get_contents($xmlfile); 
+                $xmlstr=file_get_contents($xmlfile);
+               if($xmlstr===false) {echo $this->getError('Internal Error','Problems accessing file : '.$xmlfile);exit;   }    
                                //brutal..
                 if(strpos($xmlstr,'xmlns:abcd21')!==false){
                     $xmlstr=str_replace('abcd21="http://www.tdwg.org/schemas/abcd/2.1','abcd="http://www.tdwg.org/schemas/abcd/2.06',$xmlstr);
                     $xmlstr=str_replace('abcd21','abcd',$xmlstr);
                 }
-
-                //enriching ABCD content with info from e.g biocase monitor service
-                $xmlstr=preg_replace('/DataSet>/','DataSet>
-                                    <ABCDFile>http://'.$_SERVER['SERVER_NAME'].'/'.basename(dirname(__FILE__)) .'/'.dirname($xmlfile).'</ABCDFile>
-                                    <ABCDFiletime>'.date('Y-m-d\TH:i:s\Z',filemtime(dirname($xmlfile))).'</ABCDFiletime>
-                                    <ABCDHarvesttime>'.date('Y-m-d\TH:i:s\Z',strtotime($this->providerinfo->harvest_time)).'</ABCDHarvesttime>
-                                    <BMS_ArchiveUrl>'.$this->providerinfo->archive_url.'</BMS_ArchiveUrl>
-                                    <BMS_ArchiveFolder>'.$this->providerinfo->archive_folder.'</BMS_ArchiveFolder>
-                                    <BMS_Datacenter>'.$this->providerinfo->provider_datacenter.'</BMS_Datacenter>
-                                    <BMS_Datacenter_short>'.$this->providerinfo->provider_shortname.'</BMS_Datacenter_short>
-                                    <BMS_Publisher>'.$this->providerinfo->provider_name.'</BMS_Publisher>
-                                    <BMS_dsa>'.$this->providerinfo->dsa.'</BMS_dsa>
-                                    <BMS_ProviderID>'.$this->providerinfo->providerid.'</BMS_ProviderID>
-                                    <BMS_Pywrapper>'.$this->providerinfo->biocase_url.'</BMS_Pywrapper>
-                                    <BMS_Querytool>'.$this->providerinfo->querytool.'</BMS_Querytool>',$xmlstr,1);
-               # echo $xmlstr; exit;
                 
+                $xmlparts=explode('Metadata>',$xmlstr);
+                $xmlheader=$xmlparts[0].'Metadata>';
+                $xmlbody=$xmlparts[1].'Metadata>'.$xmlparts[2];
+                //enriching ABCD content with info from e.g biocase monitor service
+                #print_r($this->providerinfo);exit;
+                
+                $xmlheader=preg_replace('/<([a-z]+:)?DataSets\s{1}/','$0xmlns:so="https://ws.gfbio.org/so/" ',$xmlheader);
 
+               $xmlheader=preg_replace('/DataSet>/','DataSet>
+                                    <so:ABCDFile>http://'.$_SERVER['SERVER_NAME'].'/'.basename(dirname(__FILE__)) .'/'.dirname($xmlfile).'</so:ABCDFile>
+                                    <so:ABCDFiletime>'.date('Y-m-d\TH:i:s\Z',filemtime(dirname($xmlfile))).'</so:ABCDFiletime>
+                                    <so:ABCDHarvesttime>'.date('Y-m-d\TH:i:s\Z',strtotime($this->providerinfo->harvest_time)).'</so:ABCDHarvesttime>
+                                    <so:BMS_ArchiveUrl>'.$this->providerinfo->archive_url.'</so:BMS_ArchiveUrl>
+                                    <so:BMS_ArchiveFolder>'.$this->providerinfo->archive_folder.'</so:BMS_ArchiveFolder>
+                                    <so:BMS_Datacenter>'.$this->providerinfo->provider_datacenter.'</so:BMS_Datacenter>
+                                    <so:BMS_Datacenter_short>'.$this->providerinfo->provider_shortname.'</so:BMS_Datacenter_short>
+                                    <so:BMS_Publisher>'.$this->providerinfo->provider_name.'</so:BMS_Publisher>
+                                    <so:BMS_dsa>'.$this->providerinfo->dsa.'</so:BMS_dsa>
+                                    <so:BMS_ProviderID>'.$this->providerinfo->providerid.'</so:BMS_ProviderID>
+                                    <so:BMS_Pywrapper>'.$this->providerinfo->biocase_url.'</so:BMS_Pywrapper>
+                                    <so:BMS_Querytool>'.$this->providerinfo->querytool.'</so:BMS_Querytool>',$xmlheader);
+                
+                
+            $xmlstr=$xmlheader.$xmlbody;
                 $XML->loadXML($xmlstr);
                 
                 if($this->providerinfo->harvest_status=="delete"){
@@ -441,6 +455,7 @@ class oai{
                     $xslt->importStylesheet( $XSL );
                     #echo libxml_get_last_error();
                     $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt->transformToXML( $XML ));
+                    #echo libxml_get_last_error();
                 }
                 else{
                     if($firstfile==1){
@@ -450,8 +465,10 @@ class oai{
                         $XSL2->load( $xsltfile2, LIBXML_NOCDATA); 
                         $xslt2->importStylesheet( $XSL2 );
                        
-                        $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt2->transformToXML( $XML ));                  
+                        $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt2->transformToXML( $XML ));
+                        #echo libxml_get_last_error();
                     }
+                    
                     $xslt = new XSLTProcessor();
                     
                     $xslt->registerPhpFunctions();
@@ -460,7 +477,11 @@ class oai{
                     $XSL->load( $xsltfile, LIBXML_NOCDATA); 
                     $xslt->importStylesheet( $XSL );
                     #echo libxml_get_last_error();
-                    $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xslt->transformToXML( $XML ));
+                    $xsltresult=$xslt->transformToXML( $XML );
+                    #print_r($xsltresult);
+                    #if($xsltresult===false) echo'Mist'; exit;
+                    $xmloutput.= str_replace('<?xml version="1.0" encoding="UTF-8"?>','',$xsltresult);
+                    #echo libxml_get_last_error();
                 }
             } 
 

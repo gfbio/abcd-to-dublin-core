@@ -1,8 +1,9 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
-
+//error_reporting(-1);
 set_time_limit(0);
 date_default_timezone_set('UTC');
+ini_set('memory_limit', '258M');
 header('Content-type: application/xml');
 include_once('cls_oai.php');
 /*$loghandle=fopen('log.txt','a');
@@ -39,8 +40,11 @@ if(isset($_REQUEST['verb'])){
     #$updates=GetModifiedDates($gatewayfolder.'/'.$repositoryname);
     if(in_array($verb, $possibleverbs)){
         if(isset($repositoryname)){
-            $validset=false;            
+            $validset=false;
+            #if(in_array($repositoryname,$oai->repositories)) echo 'FOUND'; 
+            #print_r($oai->repositories); 
             foreach($oai->repositories as $set){
+                #echo('#'.$set.'#'.$repositoryname.'#'."\r\n");
                 if($repositoryname==$set) $validset=true;
             }
             if($validset===false){               

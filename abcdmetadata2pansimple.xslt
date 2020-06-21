@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:abcd="http://www.tdwg.org/schemas/abcd/2.06" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:php="http://php.net/xsl" exclude-result-prefixes="php" extension-element-prefixes="php">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:abcd="http://www.tdwg.org/schemas/abcd/2.06"  xmlns:so="https://ws.gfbio.org/so/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:php="http://php.net/xsl" exclude-result-prefixes="php" extension-element-prefixes="php">
 	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 	<xsl:template match="/">
-			<oai:record>
-			<oai:header status="deleted">
-				<oai:identifier>
-					<xsl:text>urn:gfbio.org:abcd:set:</xsl:text>
-					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_dsa"/>
-				</oai:identifier>
-				<oai:datestamp>
-					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/ABCDHarvesttime"/>
-				</oai:datestamp>
-			</oai:header>
-		</oai:record>
 		<oai:record>
 			<oai:header>
 				<oai:identifier><xsl:text>urn:gfbio.org:abcd:set:</xsl:text>
-					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_ArchiveFolder"/>
+					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:BMS_ArchiveFolder"/>
 				</oai:identifier>
 				<oai:datestamp>
-					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/ABCDHarvesttime"/>
+					<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:ABCDHarvesttime"/>
 				</oai:datestamp>
 			</oai:header>
 			<oai:metadata>
@@ -39,20 +28,24 @@
 						</dc:description>
 					</xsl:if>
 					<xsl:for-each select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Owners">
+					<xsl:if test="abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text">
 						<dc:contributor>
 							<xsl:value-of select="abcd:Owner/abcd:Organisation/abcd:Name/abcd:Representation/abcd:Text"/>
 						</dc:contributor>
+						</xsl:if>
 					</xsl:for-each>
 					<xsl:for-each select="/abcd:DataSets/abcd:DataSet/abcd:ContentContacts">
+					<xsl:if test="abcd:ContentContacts/abcd:ContentContact/abcd:Name">
 						<dc:contributor>
 							<xsl:value-of select="abcd:ContentContacts/abcd:ContentContact/abcd:Name"/>
 						</dc:contributor>
+						</xsl:if>
 					</xsl:for-each>
 					<dc:publisher>
-						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_Publisher"/>
+						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:BMS_Publisher"/>
 					</dc:publisher>
 					<dataCenter>
-						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_Datacenter"/>
+						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:BMS_Datacenter"/>
 					</dataCenter>
 					<dc:type>ABCD_Dataset</dc:type>
 					<dc:format>text/html</dc:format>
@@ -62,7 +55,7 @@
 						</linkage>
 					</xsl:if>
 					<linkage type="data">
-						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_ArchiveUrl"/>
+						<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:BMS_ArchiveUrl"/>
 					</linkage>
 					<dc:identifier>
 						<xsl:choose>
@@ -70,7 +63,7 @@
 								<xsl:value-of select="/abcd:DataSets/abcd:DataSet/abcd:Metadata/abcd:Description/abcd:Representation/abcd:URI"/>
 							</xsl:when>
 							<xsl:otherwise>
-								<xsl:value-of select="/abcd:DataSets/abcd:DataSet/BMS_ArchiveFolder"/>
+								<xsl:value-of select="/abcd:DataSets/abcd:DataSet/so:BMS_ArchiveFolder"/>
 							</xsl:otherwise>
 						</xsl:choose>
 					</dc:identifier>
