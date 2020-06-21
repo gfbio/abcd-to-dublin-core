@@ -16,17 +16,26 @@ class oai{
        # $this->GetModifiedDates();    
     }
     
+    function getServerURL() {
+      $url = (isset($_SERVER[HTTPS]) && $_SERVER[HTTPS]=='on') ? 'https://' : 'http://';
+      return $url.$_SERVER[HTTP_HOST];
+    }
+    
+    function getRequestHeaderXML() {
+      $requesturl = $this->getServerURL().parse_url('http://localhost'.$_SERVER[REQUEST_URI], PHP_URL_PATH);
+      $xml = '<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">';
+      $xml .= '<responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>';
+      $xml .= '<request';
+      foreach ($_GET as $key => $value) {
+        $xml .= ' '.htmlspecialchars($key).'="'.htmlspecialchars($value).'"';
+      }
+      $xml .= '>'.htmlspecialchars($requesturl).'</request>';
+      return $xml;
+    }
+    
     function getError($errcode,$errmessage=''){
-        echo '<?xml version="1.0" encoding="UTF-8"?>
-    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-             http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-      <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-      <request>http://'.$_SERVER[HTTP_HOST].urlencode($_SERVER[REQUEST_URI]).'</request>
-      <error code="'.$errcode.'">'.$errmessage.'</error>
-    </OAI-PMH>';
-    $this->error=true;
+        echo $this->getRequestHeaderXML().'<error code="'.$errcode.'">'.htmlspecialchars($errmessage).'</error></OAI-PMH>';
+        $this->error=true;
     }
     
     function getProviderInfo(){
@@ -108,15 +117,7 @@ class oai{
         }
     }
     function ListSets(){
-        $requesturl='http://'.$_SERVER[HTTP_HOST].parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
-        $response='<?xml version="1.0" encoding="UTF-8"?>
-    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-             http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-     <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-     <request verb="ListSets">'.$requesturl.'</request>
-     <ListSets>';
+        $response=$this->getRequestHeaderXML().'<ListSets>';
      foreach($this->repositories as $sid=>$set){
         if($set['status']!='delete'){
         $response.='<set>
@@ -131,12 +132,7 @@ class oai{
     }
     
     function Identify(){    
-        $requesturl='http://'.$_SERVER[HTTP_HOST].parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);    
-        $response='<?xml version="1.0" encoding="UTF-8"?>
-    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-      <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-      <request verb="Identify">'.$requesturl.'</request>
-      <Identify>
+        $response=$this->getRequestHeaderXML().'<Identify>
         <repositoryName>GFBio ABCD Archives OAI Provider</repositoryName>
         <baseURL>'.$requesturl.'</baseURL>
         <protocolVersion>2.0</protocolVersion>
@@ -150,15 +146,7 @@ class oai{
     }	
     
     function ListMetadataFormats(){
-        $baseurl='http://'.$_SERVER[HTTP_HOST].parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
-        $response='<?xml version="1.0" encoding="UTF-8"?>
-        <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-                 http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-          <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-          <request verb="ListMetadataFormats">'.$baseurl.'</request>
-          <ListMetadataFormats>
+        $response=$this->getRequestHeaderXML().'<ListMetadataFormats>
             <metadataFormat>
                 <metadataPrefix>oai_dc</metadataPrefix>
                 <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
@@ -279,7 +267,6 @@ class oai{
     function ListIdentifiers($resumptiontoken=null,$from=null, $to=null){
         $xsltfile='abcd2ids.xslt';
         $n=0;
-        $baseurl='http://'.$_SERVER[HTTP_HOST].parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
         if(isset($from)){
             $fromts=strtotime($from);
             if($fromts===false)
@@ -305,14 +292,7 @@ class oai{
             $resumptiontoken=$tokeninfo['nexttoken'];
             
             if(isset($xmlfile)){
-                $response= '<?xml version="1.0" encoding="UTF-8"?>
-                <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-             http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-     <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-     <request verb="ListIdentifiers">'.$baseurl.'</request>
-     <ListIdentifiers>'; 
+                $response= $this->getRequestHeaderXML().'<ListIdentifiers>'; 
             if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){libxml_use_internal_errors(true);
                 $XML = new DOMDocument();
                 
@@ -369,7 +349,6 @@ class oai{
              $xsltfile='abcd2pansimple.xslt';
          $xsltfile2='abcdmetadata2pansimple.xslt';
          $xsltfiledel='abcd_deleted.xslt';
-        $baseurl='http://'.$_SERVER[HTTP_HOST].parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
 
         if(isset($from)){
             $fromts=strtotime($from);
@@ -400,15 +379,8 @@ class oai{
             $resumptiontoken=$tokeninfo['nexttoken'];
             
             if(isset($xmlfile)){
-                $xmloutput= '<?xml version="1.0" encoding="UTF-8"?>
-                <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-             http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-     <responseDate>'.gmdate('Y-m-d\TH:i:s\Z').'</responseDate>
-     <request verb="ListRecords">'.$baseurl.'</request>
-     <ListRecords>';      
-            if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){    
+                $xmloutput= $this->getRequestHeaderXML().'<ListRecords>';      
+               if($xmlfile!='..'&&$xmlfile!='.'&&strpos($xmlfile,'.xml')!==false){    
                 $XML = new DOMDocument();
                 
                 $xmlstr=file_get_contents($xmlfile);
@@ -428,7 +400,7 @@ class oai{
                 $xmlheader=preg_replace('/<([a-z]+:)?DataSets\s{1}/','$0xmlns:so="https://ws.gfbio.org/so/" ',$xmlheader);
 
                $xmlheader=preg_replace('/DataSet>/','DataSet>
-                                    <so:ABCDFile>http://'.$_SERVER['SERVER_NAME'].'/'.basename(dirname(__FILE__)) .'/'.dirname($xmlfile).'</so:ABCDFile>
+                                    <so:ABCDFile>'.htmlspecialchars($this->getServerURL().'/'.basename($_SERVER[SCRIPT_NAME]).'/'.dirname($xmlfile)).'</so:ABCDFile>
                                     <so:ABCDFiletime>'.date('Y-m-d\TH:i:s\Z',filemtime(dirname($xmlfile))).'</so:ABCDFiletime>
                                     <so:ABCDHarvesttime>'.date('Y-m-d\TH:i:s\Z',strtotime($this->providerinfo->harvest_time)).'</so:ABCDHarvesttime>
                                     <so:BMS_ArchiveUrl>'.$this->providerinfo->archive_url.'</so:BMS_ArchiveUrl>
